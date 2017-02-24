@@ -2,14 +2,19 @@ package app
 
 import (
 	log "github.com/Sirupsen/logrus"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/elbuo8/juggler/app/models"
 	"os"
 	"os/signal"
 )
 
+var REGIONS = []string{"us-east-1"}
+
 type App struct {
-	DBSession *models.DBSession
-	Logger    *log.Logger
+	AWSSessions map[string]*session.Session
+	DBSession   *models.DBSession
+	Logger      *log.Logger
 }
 
 func listenAndCloseGracefully(s *models.DBSession, logger *log.Logger) {
@@ -26,6 +31,12 @@ func listenAndCloseGracefully(s *models.DBSession, logger *log.Logger) {
 
 func NewApp() (*App, error) {
 	app := App{}
+	app.AWSSessions = make(map[string]*session.Session)
+	for _, region := range REGIONS {
+		// https://github.com/aws/aws-sdk-go/blob/master/aws/session/session.go#L328
+		val, _ := session.NewSession(&aws.Config{Region: aws.String(region)})
+		app.AWSSessions[region] = val
+	}
 	app.Logger = log.New()
 	db, err := models.NewDB()
 	if db != nil {

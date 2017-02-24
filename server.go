@@ -8,6 +8,7 @@ import (
 	"github.com/urfave/negroni"
 	"log"
 	"net/http"
+	"os"
 )
 
 func BuildServer() http.Handler {
@@ -28,5 +29,5 @@ func BuildServer() http.Handler {
 }
 
 func main() {
-	log.Fatal(http.ListenAndServe(":3000", BuildServer()))
+	log.Fatal(http.ListenAndServe(os.Getenv("PORT"), BuildServer()))
 }
